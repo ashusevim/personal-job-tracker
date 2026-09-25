@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "python -c \"from job_tracker import create_app; create_app()\"",
   "functions": {
     "main.py": {
       "excludeFiles": "{tests/**,.venv/**,instance/**,backups/**,.vercel/**,.playwright-mcp/**,pytest.ini}"
