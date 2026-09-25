@@ -3,6 +3,12 @@ name = "personal-job-tracker"
 version = "1.0.0"
 description = "A private job application tracker for a single user."
 requires-python = ">=3.11"
+dependencies = [
+    "Flask==3.1.1",
+    "SQLAlchemy==2.1.1",
+    "psycopg[binary]==3.3.6",
+    "python-dotenv==1.2.3",
+]
 
 [tool.vercel]
 entrypoint = "main:app"
