@@ -39,18 +39,18 @@ def create_app(test_config: dict | None = None) -> Flask:
         app.config.update(test_config)
 
     instance_path = Path(app.instance_path)
-    instance_path.mkdir(parents=True, exist_ok=True, mode=0o700)
-    os.chmod(instance_path, 0o700)
-
-    if not app.config.get("DATABASE_URL"):
-        if is_vercel:
+    if is_vercel:
+        if not app.config.get("DATABASE_URL"):
             raise RuntimeError("DATABASE_URL is required on Vercel.")
-        app.config["DATABASE_URL"] = f"sqlite:///{instance_path / 'jobs.db'}"
-
-    if not app.config.get("SECRET_KEY"):
-        if is_vercel:
+        if not app.config.get("SECRET_KEY"):
             raise RuntimeError("SECRET_KEY is required on Vercel.")
-        app.config["SECRET_KEY"] = _load_or_create_secret_key(str(instance_path))
+    else:
+        instance_path.mkdir(parents=True, exist_ok=True, mode=0o700)
+        os.chmod(instance_path, 0o700)
+        if not app.config.get("DATABASE_URL"):
+            app.config["DATABASE_URL"] = f"sqlite:///{instance_path / 'jobs.db'}"
+        if not app.config.get("SECRET_KEY"):
+            app.config["SECRET_KEY"] = _load_or_create_secret_key(str(instance_path))
 
     if not app.config.get("PASSWORD_HASH") and is_vercel:
         raise RuntimeError("JOB_TRACKER_PASSWORD_HASH is required on Vercel.")

@@ -1,4 +1,5 @@
 import sqlite3
+from pathlib import Path
 
 from job_tracker.db import _normalize_database_url
 
@@ -113,6 +114,14 @@ def test_vercel_configuration_uses_secure_cookies_and_trusted_proxy(
     from job_tracker import create_app
 
     monkeypatch.setenv("VERCEL", "1")
+    original_mkdir = Path.mkdir
+
+    def reject_instance_writes(path, *args, **kwargs):
+        if path.name == "instance":
+            raise AssertionError("Vercel startup must not write to the instance path")
+        return original_mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "mkdir", reject_instance_writes)
     app = create_app(
         {
             "DATABASE_URL": f"sqlite:///{tmp_path / 'vercel-test.db'}",
