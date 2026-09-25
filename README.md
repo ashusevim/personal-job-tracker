@@ -115,7 +115,7 @@ set +a
 vercel --prod
 ```
 
-`vercel.json` points Vercel to `main:app` and initializes the database schema during the build. The public health endpoint is `/healthz`.
+`vercel.json` points Vercel to `main:app`. The application creates missing database tables when the production function cold-starts, so no database credentials are needed during Vercel's build step. The public health endpoint is `/healthz`.
 
 ## Change the master password
 
