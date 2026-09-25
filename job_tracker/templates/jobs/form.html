@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% set is_edit = mode == 'edit' %}
+{% set company = form_values.get('company', job['company'] if job else '') %}
+{% set role = form_values.get('role', job['role'] if job else '') %}
+{% set status = form_values.get('status', job['status'] if job else 'Saved') %}
+{% set job_url = form_values.get('job_url', job['job_url'] if job else '') %}
+{% set salary = form_values.get('salary', job['salary'] if job else '') %}
+{% set location = form_values.get('location', job['location'] if job else '') %}
+{% set applied_date = form_values.get('applied_date', job['applied_date'] if job else '') %}
+{% set notes = form_values.get('notes', job['notes'] if job else '') %}
+
+{% block title %}{{ 'Edit' if is_edit else 'Add' }} application · Job Tracker{% endblock %}
+
+{% block content %}
+<section class="form-page" aria-labelledby="page-title">
+  <a class="back-link" href="{{ url_for('jobs.index') }}"><span aria-hidden="true">←</span> Back to applications</a>
+  <div class="form-heading">
+    <p class="eyebrow">{{ 'Update details' if is_edit else 'New opportunity' }}</p>
+    <h1 id="page-title">{{ 'Edit application' if is_edit else 'Add an application' }}</h1>
+    <p>{{ 'Keep the role details current as your search moves forward.' if is_edit else 'Capture the role now. You can update it whenever things change.' }}</p>
+  </div>
+
+  {% if errors %}
+    <div class="form-errors" role="alert" tabindex="-1">
+      <h2>Check these fields</h2>
+      <ul>
+        {% for field, error in errors.items() %}
+          <li><a href="#{{ field }}">{{ error }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" class="job-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <fieldset>
+      <legend>Role details</legend>
+      <div class="form-grid">
+        <div class="field">
+          <label for="company">Company <span aria-hidden="true">*</span></label>
+          <input id="company" name="company" type="text" value="{{ company }}" maxlength="120"
+                 autocomplete="organization" required
+                 aria-invalid="{{ 'true' if errors.company else 'false' }}"
+                 {% if errors.company %}aria-describedby="company-error"{% endif %}>
+          {% if errors.company %}<p class="field-error" id="company-error">{{ errors.company }}</p>{% endif %}
+        </div>
+
+        <div class="field">
+          <label for="role">Role title <span aria-hidden="true">*</span></label>
+          <input id="role" name="role" type="text" value="{{ role }}" maxlength="120"
+                 autocomplete="organization-title" required
+                 aria-invalid="{{ 'true' if errors.role else 'false' }}"
+                 {% if errors.role %}aria-describedby="role-error"{% endif %}>
+          {% if errors.role %}<p class="field-error" id="role-error">{{ errors.role }}</p>{% endif %}
+        </div>
+
+        <div class="field field-full">
+          <label for="job_url">Job URL</label>
+          <input id="job_url" name="job_url" type="url" value="{{ job_url }}" maxlength="2000"
+                 inputmode="url" placeholder="https://"
+                 aria-invalid="{{ 'true' if errors.job_url else 'false' }}"
+                 {% if errors.job_url %}aria-describedby="job_url-error job_url-hint"{% else %}aria-describedby="job_url-hint"{% endif %}>
+          <p class="field-hint" id="job_url-hint">Optional. Must start with http:// or https://.</p>
+          {% if errors.job_url %}<p class="field-error" id="job_url-error">{{ errors.job_url }}</p>{% endif %}
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Application details</legend>
+      <div class="form-grid">
+        <div class="field">
+          <label for="status">Status <span aria-hidden="true">*</span></label>
+          <select id="status" name="status" required aria-invalid="{{ 'true' if errors.status else 'false' }}"
+                  {% if errors.status %}aria-describedby="status-error"{% endif %}>
+            {% for option in statuses %}
+              <option value="{{ option }}" {% if status == option %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+          </select>
+          {% if errors.status %}<p class="field-error" id="status-error">{{ errors.status }}</p>{% endif %}
+        </div>
+
+        <div class="field">
+          <label for="applied_date">Applied date</label>
+          <input id="applied_date" name="applied_date" type="date" value="{{ applied_date }}"
+                 max="{{ today }}" aria-invalid="{{ 'true' if errors.applied_date else 'false' }}"
+                 {% if errors.applied_date %}aria-describedby="applied_date-error"{% endif %}>
+          {% if errors.applied_date %}<p class="field-error" id="applied_date-error">{{ errors.applied_date }}</p>{% endif %}
+        </div>
+
+        <div class="field">
+          <label for="location">Location</label>
+          <input id="location" name="location" type="text" value="{{ location }}" maxlength="120"
+                 autocomplete="address-level2" aria-invalid="{{ 'true' if errors.location else 'false' }}"
+                 {% if errors.location %}aria-describedby="location-error"{% endif %}>
+          {% if errors.location %}<p class="field-error" id="location-error">{{ errors.location }}</p>{% endif %}
+        </div>
+
+        <div class="field">
+          <label for="salary">Salary</label>
+          <input id="salary" name="salary" type="text" value="{{ salary }}" maxlength="80"
+                 placeholder="$120k–$145k" aria-invalid="{{ 'true' if errors.salary else 'false' }}"
+                 {% if errors.salary %}aria-describedby="salary-error"{% endif %}>
+          {% if errors.salary %}<p class="field-error" id="salary-error">{{ errors.salary }}</p>{% endif %}
+        </div>
+
+        <div class="field field-full">
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" rows="5" maxlength="5000"
+                    placeholder="Contact, interview details, next steps, or links to your notes…"
+                    aria-invalid="{{ 'true' if errors.notes else 'false' }}"
+                    {% if errors.notes %}aria-describedby="notes-error"{% endif %}>{{ notes }}</textarea>
+          {% if errors.notes %}<p class="field-error" id="notes-error">{{ errors.notes }}</p>{% endif %}
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="form-actions">
+      <a class="button button-secondary" href="{{ url_for('jobs.index') }}">Cancel</a>
+      <button class="button" type="submit">{{ 'Save changes' if is_edit else 'Add application' }}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

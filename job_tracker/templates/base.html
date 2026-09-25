@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <title>{% block title %}Job Tracker{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="{{ url_for('jobs.index') if authenticated else url_for('jobs.login') }}" aria-label="Job Tracker home">
+        <span class="brand-mark" aria-hidden="true">JT</span>
+        <span>Job Tracker</span>
+      </a>
+      {% if authenticated %}
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="{{ url_for('jobs.index') }}">Applications</a>
+          <form method="post" action="{{ url_for('jobs.logout') }}" class="logout-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="button button-secondary button-small" type="submit">Sign out</button>
+          </form>
+        </nav>
+      {% endif %}
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack" aria-live="polite">
+          {% for category, message in messages %}
+            <p class="flash flash-{{ category }}" role="status">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main id="main-content" class="main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <p>Your application data stays in your private database.</p>
+    </footer>
+  </div>
+</body>
+</html>

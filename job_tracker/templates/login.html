@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Job Tracker{% endblock %}
+
+{% block content %}
+<section class="auth-page" aria-labelledby="login-title">
+  <div class="login-card">
+    <span class="login-mark" aria-hidden="true">JT</span>
+    <p class="eyebrow">Private workspace</p>
+    <h1 id="login-title">Enter your master password</h1>
+    <p class="login-intro">This tracker is private. Your password is checked on the server and never stored in plain text.</p>
+
+    {% if error %}
+      <p class="login-error" role="alert">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('jobs.login') }}" class="login-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="next" value="{{ next_url }}">
+      <div class="field">
+        <label for="password">Master password</label>
+        <input id="password" name="password" type="password" required
+               maxlength="1024" autocomplete="current-password"
+               autofocus aria-describedby="password-hint">
+        <p class="field-hint" id="password-hint">Your session stays signed in on this device for 30 days.</p>
+      </div>
+      <button class="button" type="submit">Unlock tracker</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} · Job Tracker{% endblock %}
+{% block content %}
+<section class="error-state" aria-labelledby="error-title">
+  <p class="error-code">{{ code }}</p>
+  <h1 id="error-title">{{ message }}</h1>
+  <p>Check the address or return to your applications.</p>
+  <a class="button" href="{{ url_for('jobs.index') }}">Back to applications</a>
+</section>
+{% endblock %}

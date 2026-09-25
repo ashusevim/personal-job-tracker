@@ -1,0 +1,12 @@
+[project]
+name = "personal-job-tracker"
+version = "1.0.0"
+description = "A private job application tracker for a single user."
+requires-python = ">=3.11"
+
+[tool.vercel]
+entrypoint = "main:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

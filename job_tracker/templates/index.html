@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Applications · Job Tracker{% endblock %}
+
+{% macro job_actions(job, compact=false) %}
+  <div class="application-actions{% if compact %} table-actions{% endif %}">
+    {% if job['job_url'] %}
+      <a class="text-link{% if compact %} table-posting-link{% endif %}"
+         href="{{ job['job_url'] }}" target="_blank" rel="noopener noreferrer">
+        Job posting <span class="visually-hidden">for {{ job['role'] }} at {{ job['company'] }} (opens in a new tab)</span>
+        <span aria-hidden="true">↗</span>
+      </a>
+    {% endif %}
+    <a class="button button-secondary button-small" href="{{ url_for('jobs.edit_job', job_id=job['id']) }}">
+      Edit<span class="visually-hidden"> {{ job['role'] }} at {{ job['company'] }}</span>
+    </a>
+    <form method="post" action="{{ url_for('jobs.remove_job', job_id=job['id']) }}" class="delete-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="button button-danger button-small" type="submit" data-confirm-delete
+              data-job-label="{{ job['company'] }} — {{ job['role'] }}">
+        Delete<span class="visually-hidden"> {{ job['role'] }} at {{ job['company'] }}</span>
+      </button>
+    </form>
+  </div>
+{% endmacro %}
+
+{% block content %}
+<section class="page-heading" aria-labelledby="page-title">
+  <div>
+    <p class="eyebrow">Search workspace</p>
+    <h1 id="page-title">Your applications</h1>
+    <p class="page-intro">Keep every opportunity, conversation, and next step in one place.</p>
+  </div>
+  <a class="button" href="{{ url_for('jobs.new_job') }}">
+    <span aria-hidden="true">+</span> Add application
+  </a>
+</section>
+
+<section class="summary" aria-label="Application status summary">
+  <div class="summary-item summary-total">
+    <span class="summary-value">{{ counts['Total'] }}</span>
+    <span class="summary-label">Total</span>
+  </div>
+  {% for status in statuses %}
+    <div class="summary-item">
+      <span class="summary-dot status-{{ status|lower }}" aria-hidden="true"></span>
+      <span class="summary-value">{{ counts[status] }}</span>
+      <span class="summary-label">{{ status }}</span>
+    </div>
+  {% endfor %}
+</section>
+
+<section class="application-section" aria-labelledby="application-list-title">
+  <div class="section-heading">
+    <div>
+      <h2 id="application-list-title">Applications</h2>
+      <p>{{ counts['Total'] }} {{ 'application' if counts['Total'] == 1 else 'applications' }}</p>
+    </div>
+    <nav class="view-switcher" aria-label="Application view">
+      <a href="{{ url_for('jobs.index', view='list') }}" {% if view == 'list' %}class="active" aria-current="page"{% endif %}>List</a>
+      <a href="{{ url_for('jobs.index', view='table') }}" {% if view == 'table' %}class="active" aria-current="page"{% endif %}>Table</a>
+    </nav>
+  </div>
+
+  {% if jobs %}
+    {% if view == 'table' %}
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Applications table, scroll horizontally on small screens">
+        <table class="application-table">
+          <thead>
+            <tr>
+              <th scope="col">Role</th>
+              <th scope="col">Company</th>
+              <th scope="col">Status</th>
+              <th scope="col">Applied</th>
+              <th scope="col">Location</th>
+              <th scope="col">Salary</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for job in jobs %}
+              <tr>
+                <td class="table-role">
+                  <a href="{{ url_for('jobs.edit_job', job_id=job['id']) }}">{{ job['role'] }}</a>
+                </td>
+                <td>{{ job['company'] }}</td>
+                <td>
+                  <span class="status-badge status-{{ job['status']|lower }}">{{ job['status'] }}</span>
+                </td>
+                <td>{{ job['applied_date']|display_date }}</td>
+                <td>{{ job['location'] or '—' }}</td>
+                <td>{{ job['salary'] or '—' }}</td>
+                <td>{{ job_actions(job, compact=true) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <ul class="application-list" role="list">
+        {% for job in jobs %}
+          {% set status_class = job['status']|lower %}
+          <li class="application-card">
+            <div class="application-main">
+              <div class="application-title-row">
+                <h3><a href="{{ url_for('jobs.edit_job', job_id=job['id']) }}">{{ job['role'] }}</a></h3>
+                <span class="status-badge status-{{ status_class }}">{{ job['status'] }}</span>
+              </div>
+              <p class="company-name">{{ job['company'] }}</p>
+              <dl class="job-meta">
+                <div>
+                  <dt>Applied</dt>
+                  <dd>{{ job['applied_date']|display_date }}</dd>
+                </div>
+                {% if job['location'] %}
+                  <div>
+                    <dt>Location</dt>
+                    <dd>{{ job['location'] }}</dd>
+                  </div>
+                {% endif %}
+                {% if job['salary'] %}
+                  <div>
+                    <dt>Salary</dt>
+                    <dd>{{ job['salary'] }}</dd>
+                  </div>
+                {% endif %}
+              </dl>
+              {% if job['notes'] %}
+                <p class="job-notes">{{ job['notes'] }}</p>
+              {% endif %}
+            </div>
+            {{ job_actions(job) }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">↳</span>
+      <h3>No applications yet</h3>
+      <p>Add the first role you are considering and start building your search list.</p>
+      <a class="button" href="{{ url_for('jobs.new_job') }}">Add your first application</a>
+    </div>
+  {% endif %}
+</section>
+
+<dialog class="confirm-dialog" data-delete-dialog aria-labelledby="delete-dialog-title">
+  <form method="dialog" class="dialog-card">
+    <span class="dialog-icon" aria-hidden="true">×</span>
+    <h2 id="delete-dialog-title">Delete this application?</h2>
+    <p><strong data-delete-label></strong> will be permanently removed.</p>
+    <div class="dialog-actions">
+      <button class="button button-secondary" value="cancel" data-close-dialog>Keep application</button>
+      <button class="button button-danger" value="confirm" data-confirm-deletion>Delete</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
